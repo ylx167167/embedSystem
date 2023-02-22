@@ -1,0 +1,88 @@
+/*
+ * Advanced Encryption Standard
+ * @author Dani Huertas
+ * @email huertas.dani@gmail.com
+ *
+ * Based on the document FIPS PUB 197
+ */
+
+
+#include <stdio.h>
+
+#include "aes.h"
+
+int main()
+{
+
+	uint8_t i;
+
+	/* 256 bit key */ //原始秘钥 128 192 256
+	uint8_t key[] = {
+		0x00, 0x01, 0x02, 0x03,
+		0x04, 0x05, 0x06, 0x07,
+		0x08, 0x09, 0x0a, 0x0b,
+		0x0c, 0x0d, 0x0e, 0x0f,
+		0x10, 0x11, 0x12, 0x13,
+		0x14, 0x15, 0x16, 0x17,
+		0x18, 0x19, 0x1a, 0x1b,
+		0x1c, 0x1d, 0x1e, 0x1f};
+
+	// 读取原始数据
+	FILE *fp;
+	fp = fopen("/home/wayne/samba/cryptography/txt/configure", "r+");
+	fseek(fp, 0, SEEK_END);
+	int g_fileSize = ftell(fp);
+	printf("%d \r\n", g_fileSize);
+	uint8_t sourceFile[g_fileSize];
+	uint8_t g_encrypFile[g_fileSize];
+	fseek(fp, 0, SEEK_SET);
+	fread(sourceFile, 1, g_fileSize, fp);
+	fclose(fp);
+	sourceFile[g_fileSize] = '\0';
+
+	//生成扩展密钥
+	uint8_t *w; // expanded key
+	w = aes_init(sizeof(key));
+	aes_key_expansion(key, w);
+
+	//加密
+	int cycle = g_fileSize / 16;
+	for (int i = 0; i < cycle; i++)
+	{
+		aes_cipher(&sourceFile[i * 16] /* in */, &g_encrypFile[i * 16] /* out */, w);
+	}
+	if (g_fileSize % 16 > 0)
+	{
+		aes_cipher(&sourceFile[cycle * 16] /* in */, &g_encrypFile[cycle * 16] /* out */, w /* expanded key */);
+	}
+
+	//通过ipfs上传文件
+	FILE *wp;
+	wp=fopen("/home/wayne/samba/cryptography/txt/encryptfile","wb");
+	fwrite(g_encrypFile,sizeof(uint8_t),g_fileSize,wp);
+	fclose(wp);
+	
+
+
+	//cp-abe加密 aes秘钥和密文
+
+
+	//将密文上传到区块链
+
+
+	//解密
+	FILE *dp;
+	uint8_t g_decrypFile[g_fileSize];
+	dp=fopen("/home/wayne/samba/cryptography/txt/encryptfile","r+");
+	fseek(dp, 0, SEEK_SET);
+	fread(g_encrypFile, 1, g_fileSize, dp);
+	fclose(dp);
+	for (int i = 0; i < cycle; i++)
+		aes_inv_cipher(&g_encrypFile[i * 16], &g_decrypFile[i * 16], w);
+	if (g_fileSize % 16 > 0)
+		aes_inv_cipher(&g_encrypFile[cycle * 16], &g_decrypFile[cycle * 16], w);
+	printf("%s \n以上为解密文件\n", g_decrypFile);
+	free(w);
+
+	return 0;
+}

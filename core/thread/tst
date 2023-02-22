@@ -1,0 +1,178 @@
+
+
+/*
+ *Filename         :threadpool.cpp
+ *Description      :
+ *Author           :wayneyao
+ *Email            :417838124@qq.com
+ *Time             :2023/02/17 22:13:20 */
+#include "threadpool.hpp"
+
+#include "system/global.hpp"
+
+using namespace EmbedSystem;
+
+GTThreadPool::GTThreadPool() : max_thread_numb(200), min_thread_numb(2) {}
+
+GTThreadPool::~GTThreadPool() {
+  This(managercloesd) = true;
+  delete dynamicManager;
+}
+
+GTThreadPool *GTThreadPool::GetInstance() {
+  static GTThreadPool *uniqueInstance = NULL;
+  if (!uniqueInstance) {
+    uniqueInstance = new GTThreadPool();
+    return uniqueInstance;
+  }
+}
+
+void GTThreadPool::Init(_IN_ EmbedSystem::PoolType type, _IN_ int num,
+                        _IN_ int max_thread, _IN_ int min_thread) {
+  This(ptype) = type;
+  This(numb) = num;
+  This(max_thread_numb) = max_thread;
+  This(min_thread_numb) = min_thread;
+  This(managercloesd) = false;
+  This(dynamicManager) = NULL;
+  This(dynamicpond) = NULL;
+  switch (this->ptype) {
+    case HIPE_DYNAMIC:
+      This(dynamicpond) = new hipe::DynamicThreadPond(this->numb);
+      This(dynamicpond)->waitForThreads();
+      break;
+    case HIPE_BALANCE:
+      this->balancepnd = new hipe::BalancedThreadPond(this->numb);
+      break;
+    case HIPE_STEADY:
+      this->steadypond =
+          new hipe::SteadyThreadPond(this->numb, this->numb * 10);
+      break;
+    case ThreadPool:
+      /* code */
+      break;
+    default:
+      break;
+  }
+  // 启动线程池管理线程
+  This(GTThreadPoolmanager());
+}
+
+// 为线程池注入执行任务
+void GTThreadPool::AddThreadFunc(Thread_Proc *proc, void *args) {
+  switch (this->ptype) {
+    case HIPE_DYNAMIC:
+      // LOG__INFO("Add Thread Func");
+      // This(dynamicpond)->submit(std::bind(proc, args));  //
+      // 将任务加入到线程池中 This(dynamicpond)->waitForTasks();
+      LOG__INFO("Add Thread Func");
+      This(dynamicpond)->submit(std::bind(proc, args));  // 将任务加入到线程池中
+      This(dynamicpond)->addThreads(1);
+      LOG__INFO("Add Thread Func");
+      This(dynamicpond)->submit(std::bind(proc, args));  // 将任务加入到线程池中
+      // This(dynamicpond)->addThreads(1);
+      LOG__INFO("Add Thread Func");
+      This(dynamicpond)->waitForTasks();
+      LOG__INFO(this->dynamicpond->getRunningThreadNumb());
+      This(dynamicpond)->delThreads(1);
+      break;
+    case HIPE_BALANCE:
+      break;
+    case HIPE_STEADY:
+      break;
+    case ThreadPool:
+      /* code */
+      break;
+    default:
+      break;
+  }
+}
+// 增加一个线程
+void GTThreadPool::AddThreadWorker() {
+  switch (this->ptype) {
+    case HIPE_DYNAMIC:
+      This(dynamicpond)->addThreads(1);
+      This(dynamicpond)->waitForTasks();
+      break;
+    case HIPE_BALANCE:
+      break;
+    case HIPE_STEADY:
+      break;
+    case ThreadPool:
+      break;
+    default:
+      break;
+  }
+}
+//
+void managerHapi(EmbedSystem::DynamicManager *mager) {
+  enum class Action { add, del };
+  Action last_act = Action::add;
+  hipe::DynamicThreadPond *pond = mager->pond;
+  int max_thread_numb = mager->max_numb;
+  int min_thread_numb = mager->min_numb;
+  bool *closed = mager->managerclosed;
+  int unit = 1;
+  int prev_load = 0;
+  int total = 0;
+  while (*(closed) == false) {
+    //   auto new_load = pond->resetTasksLoaded();
+    //   auto tnumb = pond->getExpectThreadNumb();
+    //   LOG__INFO("new_load" << new_load);
+    //   LOG__INFO("tnumb" << tnumb);
+
+    //   if (new_load > prev_load) {
+    //     if (tnumb < max_thread_numb) {
+    //       pond->addThreads(unit);
+    //       pond->waitForThreads();
+    //       last_act = Action::add;
+    //     }
+
+    //   } else if (new_load < prev_load) {
+    //     if (last_act == Action::add && tnumb > min_thread_numb) {
+    //       pond->delThreads(unit);
+    //       pond->waitForThreads();
+    //       last_act = Action::del;
+    //     } else if (last_act == Action::del) {
+    //       pond->addThreads(unit);
+    //       pond->waitForThreads();
+    //       last_act = Action::add;
+    //     }
+    //   } else {
+    //     if (!pond->getTasksRemain() && tnumb > min_thread_numb) {
+    //       pond->delThreads(unit);
+    //       pond->waitForThreads();
+    //       last_act = Action::del;
+    //     }
+    //   }
+    //   prev_load = new_load;
+    //   /* code */
+    //   hipe::util::sleep_for_seconds(1);  // 1s
+  }
+  total += pond->resetTasksLoaded();
+  delete pond;
+}
+
+// 管理线程池
+void GTThreadPool::GTThreadPoolmanager() {
+  // 每创建一个任务 则创建一个线程，每销毁一个任务则卸载一个线程
+  switch (this->ptype) {
+    case HIPE_DYNAMIC:
+      dynamicManager = new DynamicManager();
+      This(dynamicManager)->max_numb = max_thread_numb;
+      This(dynamicManager)->min_numb = min_thread_numb;
+      This(dynamicManager)->pond = This(dynamicpond);
+      This(dynamicManager)->managerclosed = &managercloesd;
+      break;
+    case HIPE_BALANCE:
+      break;
+    case HIPE_STEADY:
+      break;
+    case ThreadPool:
+      break;
+    default:
+      break;
+  }
+  std::thread mger(managerHapi, This(dynamicManager));
+  mger.detach();
+}

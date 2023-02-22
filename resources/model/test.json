@@ -1,0 +1,11 @@
+{
+    "machineid": "001",
+    "txtime": "20210504",
+    "payload": {
+        "sensorid": "12",
+        "workid": "34",
+        "owner": "56",
+        "macid": "78",
+        "action": "90"
+    }
+}

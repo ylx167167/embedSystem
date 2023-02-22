@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/khadas/nfs/work/linux-headers-4.9.241/include",
+                "/home/khadas/nfs/work/linux-headers-4.9.241/include/uapi",
+                "/home/khadas/nfs/work/linux-headers-4.9.241/arch/arm64/include",
+                "/home/khadas/nfs/work/linux-headers-4.9.241/arch/arm64/include/generated"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c99",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "linux-gcc-arm64"
+        }
+    ],
+    "version": 4
+}

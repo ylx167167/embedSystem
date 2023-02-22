@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "kernel.h": "c",
+        "stddef.h": "c",
+        "linkage.h": "c",
+        "platform_device.h": "c",
+        "device.h": "c",
+        "ratelimit.h": "c",
+        "sched.h": "c",
+        "module.h": "c",
+        "cputime.h": "c",
+        "shm.h": "c",
+        "shmparam.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
+}

@@ -1,0 +1,125 @@
+#include "threadpool.hpp"
+#include "system/global.hpp"
+
+using namespace EmbedSystem;
+// 每一个线程都会开一个线程池 线程池默认数量为1
+GTThreadPool::GTThreadPool(_IN_ EmbedSystem::PoolType type, _IN_ int num, _IN_ int max_thread, _IN_ int min_thread) : ptype(type), numb(num), max_thread_numb(max_thread), min_thread_numb(min_thread)
+{
+    LOG_STREAM_INFO(numb << num);
+
+    switch (this->ptype)
+    {
+    case HIPE_DYNAMIC:
+        this->dynamicpond = new hipe::DynamicThreadPond(this->numb);
+        LOG_STREAM_INFO(this->dynamicpond->getRunningThreadNumb());
+        this->dynamicpond->waitForThreads();
+        break;
+    case HIPE_BALANCE:
+        this->balancepnd = new hipe::BalancedThreadPond(this->numb);
+        break;
+    case HIPE_STEADY:
+        this->steadypond = new hipe::SteadyThreadPond(this->numb, this->numb * 10);
+        break;
+    case ThreadPool:
+        /* code */
+        break;
+    default:
+        break;
+    }
+}
+
+GTThreadPool::~GTThreadPool()
+{
+
+    switch (this->ptype)
+    {
+    case HIPE_DYNAMIC:
+        delete this->dynamicpond;
+        break;
+    case HIPE_BALANCE:
+        delete this->balancepnd;
+        break;
+    case HIPE_STEADY:
+        delete this->steadypond;
+        break;
+    case ThreadPool:
+        /* code */
+        break;
+
+    default:
+        break;
+    }
+}
+// 根据传入的线程池类型进行线程清除
+void GTThreadPool::DestroyThreadPool()
+{
+    {
+        switch (this->ptype)
+        {
+        case HIPE_DYNAMIC:
+            this->dynamicpond->close();
+            break;
+        case HIPE_BALANCE:
+            break;
+        case HIPE_STEADY:
+            break;
+        case ThreadPool:
+            /* code */
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+// 为线程池注入执行线程
+void GTThreadPool::AddThreadFunc(Thread_Proc *proc, void *args)
+{
+
+    {
+        switch (this->ptype)
+        {
+        case HIPE_DYNAMIC:
+            LOG_STREAM_INFO("Add Thread Func");
+            This(dynamicpond)->submit(std::bind(proc, args)); // 将任务加入到线程池中
+            This(dynamicpond)->addThreads(1);0
+            LOG_STREAM_INFO("Add Thread Func");
+            This(dynamicpond)->submit(std::bind(proc, args)); // 将任务加入到线程池中
+            // This(dynamicpond)->addThreads(1);
+            LOG_STREAM_INFO("Add Thread Func");
+            This(dynamicpond)->waitForTasks();
+            LOG_STREAM_INFO(this->dynamicpond->getRunningThreadNumb());
+            This(dynamicpond)->delThreads(1);
+            // This(dynamicpond)->waitForThreads();
+            break;
+        case HIPE_BALANCE:
+            break;
+        case HIPE_STEADY:
+            break;
+        case ThreadPool:
+            /* code */
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+      // LOG__INFO("Add Thread Func");
+      // This(dynamicpond)->submit(std::bind(proc, args));  //
+      // 将任务加入到线程池中 This(dynamicpond)->waitForTasks();
+      // LOG__INFO("Add Thread Func");
+      // This(dynamicpond)->submit(std::bind(proc, args));  //
+      // 将任务加入到线程池中 This(dynamicpond)->addThreads(1);
+      // LOG__INFO(this->dynamicpond->getTasksRemain());
+      // LOG__INFO("Add Thread Func");
+      // This(dynamicpond)->submit(std::bind(proc, args));  //
+      // 将任务加入到线程池中 LOG__INFO(this->dynamicpond->getTasksRemain());
+
+      // // This(dynamicpond)->addThreads(1);
+      // LOG__INFO("Add Thread Func");
+      // This(dynamicpond)->waitForTasks();
+      // LOG__INFO(this->dynamicpond->getTasksRemain());
+
+      // LOG__INFO(this->dynamicpond->getRunningThreadNumb());
+      // This(dynamicpond)->delThreads(1);

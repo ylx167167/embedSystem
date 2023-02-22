@@ -1,0 +1,19 @@
+{
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "platform_device.h": "c",
+        "moduleparam.h": "c",
+        "init.h": "c",
+        "device.h": "c",
+        "module.h": "c",
+        "of.h": "c",
+        "*.cof": "c",
+        "kernel.h": "c",
+        "stdio.h": "c",
+        "io.h": "c",
+        "interrupt.h": "c",
+        "workqueue.h": "c",
+        "completion.h": "c",
+        "clk.h": "c"
+    }
+}

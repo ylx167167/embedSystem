@@ -1,0 +1,6 @@
+
+kernel_module/khadas/kernel/linux-headers-4.9.241.tar.gz
+command/application/system
+kernel_module/khadas/lib
+install/build
+install/output

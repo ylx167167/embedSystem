@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "of_irq.h": "c",
+        "platform_device.h": "c",
+        "of.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
+}

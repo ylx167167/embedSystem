@@ -1,0 +1,104 @@
+#include <linux/init.h>
+#include <linux/module.h>
+#include <linux/moduleparam.h>
+#include <linux/platform_device.h>
+#include <linux/of.h>
+#include <linux/device.h>
+MODULE_LICENSE("Dual BSD/GPL");
+
+// static int hello_init(void) {
+//   printk(KERN_ALERT "Hello, world\n");
+//   return 0;
+// }
+static int meson_hello_probe(struct platform_device *pdev) {
+  printk("%s wayne\r\n", pdev->name);
+  printk("wayne\r\n");
+
+
+  return 0;
+}
+
+static int meson_hello_remove(struct platform_device *pdev) { return 0; }
+
+struct meson_i2c_data {
+  unsigned char delay_ajust;
+  unsigned char div_factor;
+};
+
+static const struct meson_i2c_data i2c_meson6_data = {
+    .div_factor = 4,
+    .delay_ajust = 15,
+};
+
+static const struct meson_i2c_data i2c_meson8b_data = {
+    .div_factor = 4,
+    .delay_ajust = 15,
+};
+
+static const struct meson_i2c_data i2c_gx_data = {
+    .div_factor = 4,
+    .delay_ajust = 15,
+};
+
+static const struct meson_i2c_data i2c_txl_data = {
+    .div_factor = 4,
+    .delay_ajust = 15,
+};
+
+static const struct meson_i2c_data i2c_axg_data = {
+    .div_factor = 3,
+    .delay_ajust = 15,
+};
+
+static const struct meson_i2c_data i2c_txlx_data = {
+    .div_factor = 3,
+    .delay_ajust = 15,
+};
+
+static const struct meson_i2c_data i2c_g12a_data = {
+    .div_factor = 3,
+    .delay_ajust = 15,
+};
+
+/* for the stable i2c controller, div_factor=3*/
+static const struct meson_i2c_data i2c_meson_data = {
+    .div_factor = 3,
+    .delay_ajust = 15,
+};
+
+static const struct of_device_id meson_i2c_match[] = {
+    {.compatible = "amlogic,meson6-i2c", .data = &i2c_meson6_data},
+    {.compatible = "amlogic,meson8b-i2c", .data = &i2c_meson8b_data},
+    {.compatible = "amlogic,meson-gx-i2c", .data = &i2c_gx_data},
+    {.compatible = "amlogic,meson-axg-i2c", .data = &i2c_axg_data},
+    {.compatible = "amlogic,meson-txl-i2c", .data = &i2c_txl_data},
+    {.compatible = "amlogic,meson-txlx-i2c", .data = &i2c_txlx_data},
+    {.compatible = "amlogic,meson-g12a-i2c", .data = &i2c_g12a_data},
+    {.compatible = "amlogic,meson-g12b-i2c", .data = &i2c_g12a_data},
+    {.compatible = "amlogic,meson-i2c", .data = &i2c_meson_data},
+    {},
+};
+MODULE_DEVICE_TABLE(of, meson_i2c_match);
+
+
+// static int __init hello_driver_init(void) { return 0; }
+// static int __exit hello_driver_exit(void) { return 0; }
+static struct platform_driver hello_driver = {
+    .probe = meson_hello_probe,
+    .remove = meson_hello_remove,
+    .driver =
+        {
+            .name = "haha",
+            .of_match_table = meson_i2c_match,
+        },
+};
+
+module_platform_driver(hello_driver);
+// static void hello_exit(void) { printk(KERN_ALERT "Goodbye, cruel world\n"); }
+
+// module_init(hello_driver_init);
+// module_exit(hello_driver_exit);
+MODULE_AUTHOR("wayne");
+MODULE_DESCRIPTION("hahadafdafdsa");
+MODULE_ALIAS("HELLLO");
+MODULE_VERSION("1.2");

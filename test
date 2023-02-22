@@ -1,0 +1,149 @@
+#include <dirent.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <cassert>
+#include <chrono>
+#include <cstdio>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <vector>
+
+#include "Slam_/slam.h"
+#include "Slam_/tcpp.h"
+#include "system/global.hpp"
+#include "hipe.h"
+#include "mqttclient/mqtt_client.hpp"
+#include "stdio.h"
+// #include "thread/thread.hpp"
+#include "thread/threadpool.hpp"
+#include "util.h"
+namespace Appled {
+int dd;
+}
+using namespace EmbedSystem;
+
+GTThreadPool *gtpool;
+int testprint() {
+  // while (1)
+  // {
+
+  std::cout << "haha" << std::endl;
+  /* code */
+  // }
+  return 1;
+}
+static int a = 1;
+void test1(void *b) {
+  while (1) {
+    LOG__INFO("我是1");
+    hipe::util::sleep_for_milli(1000);
+    break;
+  }
+
+  LOG__INFO("hahahahah1\r\n");
+  gtpool->AddThreadWorker();
+}
+void test2(void *b) {
+  while (1) {
+    LOG__INFO("我是2");
+    hipe::util::sleep_for_milli(6000);
+    break;
+  }
+  LOG__INFO("hahahahah2\r\n");
+}
+void test3(void *b) {
+  while (1) {
+    LOG__INFO("我是3");
+    hipe::util::sleep_for_milli(6000);
+    break;
+  }
+  LOG__INFO("hahahahah3\r\n");
+}
+void test4(void *b) {
+  while (1) {
+    LOG__INFO("我是4");
+    hipe::util::sleep_for_milli(6000);
+    break;
+  }
+  LOG__INFO("hahahahah4\r\n");
+}
+void test5(void *b) {
+  while (1) {
+    LOG__INFO("我是5");
+    hipe::util::sleep_for_milli(4000);
+    break;
+  }
+  LOG__INFO("hahahahah5\r\n");
+}
+void test6() {
+  // 动态线程池
+  gtpool = GTThreadPool::GetInstance();
+  gtpool->Init(EmbedSystem::HIPE_DYNAMIC, 0, 200, 2);
+  gtpool->AddThreadFunc(test1, NULL);
+  gtpool->AddThreadFunc(test2, NULL);
+  gtpool->AddThreadFunc(test3, NULL);
+  gtpool->AddThreadFunc(test4, NULL);
+  gtpool->AddThreadFunc(test5, NULL);
+}
+
+int main(int argc, char *argv[]) {
+  openlog(SYSLOG_OUTPUT_TAG, LOG_PID | LOG_CONS | LOG_PERROR, LOG_USER);
+  LOG__NOTICE("=====> Start App <=====");  // 输出应用开始信息
+
+  // test6();
+  using namespace EmbedSystem;
+  gtpool = GTThreadPool::GetInstance();
+  gtpool->Init(EmbedSystem::HIPE_DYNAMIC, 0, 200, 2);
+  gtpool->AddThreadFunc(test1, NULL);
+  gtpool->AddThreadFunc(test2, NULL);
+  gtpool->AddThreadFunc(test3, NULL);
+  gtpool->AddThreadFunc(test4, NULL);
+  gtpool->AddThreadFunc(test5, NULL);
+  while (1) {
+    hipe::util::sleep_for_milli(3000);
+    break;
+  }
+  gtpool->AddThreadWorker();
+  while (1) {
+    hipe::util::sleep_for_milli(7000);
+    break;
+  }
+
+  LOG__WARN("=====> Exit App <=====");
+  exit(0);
+  return 0;
+}
+
+int main(int argc, char *argv[]) {
+  openlog(SYSLOG_OUTPUT_TAG, LOG_PID | LOG_CONS | LOG_PERROR, LOG_USER);
+  LOG__NOTICE("=====> Start App <=====");  // 输出应用开始信息
+
+  // test6();
+  using namespace EmbedSystem;
+  GTThreadPool *gtpool = GTThreadPool::GetInstance();
+  gtpool->Init(EmbedSystem::HIPE_DYNAMIC, 0, 200, 2);
+  GTThread *gthread = new GTThread(gtpool);
+  gthread->CreateThread();
+  while (1) {
+    hipe::util::sleep_for_milli(3000);
+    break;
+  }
+  gthread->Start();
+  // gtpool->AddThreadWorker();
+  while (1) {
+    hipe::util::sleep_for_milli(3000);
+    break;
+  }
+  gthread->Stop();
+  while (1) {
+    hipe::util::sleep_for_milli(3000);
+    break;
+  }
+  LOG__WARN("=====> Exit App <=====");
+  exit(0);
+  return 0;
+}

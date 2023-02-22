@@ -1,0 +1,17 @@
+{
+    "mqttInfo": [
+        {
+            "host": "192.168.199.133",
+            "port": "1883",
+            "client": "clientID",
+            "defaulttopic": "CommandTopic"
+        }
+    ],
+    "test_arr": [
+        {
+            "test_1": "arr_1",
+            "test_2": "arr_2",
+            "test_3": "arr_3"
+        }
+    ],
+}

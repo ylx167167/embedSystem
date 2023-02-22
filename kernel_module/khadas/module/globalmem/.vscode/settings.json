@@ -1,0 +1,9 @@
+{
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "platform_device.h": "c",
+        "fs.h": "c",
+        "module.h": "c",
+        "slab.h": "c"
+    }
+}

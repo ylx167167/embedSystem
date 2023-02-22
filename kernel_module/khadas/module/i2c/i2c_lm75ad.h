@@ -1,0 +1,13 @@
+#ifndef _I2C_LM75AD_H_
+#define _I2C_LM75AD_H_
+
+#define LM75AD_INTSTATUS 0x01
+#define LM75AD_FLAG1 0x02
+#define LM75AD_FLAG2 0x03
+#define LM75AD_FLAG3 0x04
+#define LM75AD_FLAG4 0x05
+#define LM75AD_FLAG5 0x06
+#define LM75AD_FLAG6 0x07
+
+
+#endif

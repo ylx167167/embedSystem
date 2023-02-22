@@ -1,0 +1,171 @@
+
+
+#include <linux/slab.h>
+#include <linux/module.h>
+#include <linux/fs.h>
+#include <linux/platform_device.h>
+// #include <linux/spi
+#include <linux/cdev.h>
+#include <linux/device.h>
+#include <linux/uaccess.h>  //copy_to_user
+#include <linux/mutex.h>
+#include <linux/delay.h>
+#include <linux/timer.h>
+#include <linux/workqueue.h>
+
+#include "oled12864.h"
+
+#define DEV_NAME "oleda12864"
+
+struct oled12864_device {
+  int irq;
+  int gpio;
+  dev_t dev_no;
+  int major;
+  int minor;
+  struct cdev chrdev;
+  struct class *class;
+  struct device *device;
+  struct mutex m_lock;
+  //   struct oled12864_data data;
+  struct i2c_client *client;
+
+  int tm;
+  struct timer_list timer;
+  struct work_struct wq;
+};
+static struct oled12864_device *oled12864_dev;
+
+// static int oled12864_ops_release(struct inode *inode, struct file *file) {
+//   int ret = 0;
+//   struct oled12864_device *dev = (struct oled12864_device
+//   *)file->private_data; if (!dev) {
+//     pr_err("private_data NULL \r\n");
+//   }
+//   return ret;
+// }
+
+// static int oled12864_ops_open(struct inode *inode, struct file *file) {}
+// static long oled12864_ops_unlocked_ioctl(struct file *file, unsigned long
+// cmd,
+//                                          unsigned long arg) {}
+
+// static struct file_operations oled12864_ops = {
+//     .owner = THIS_MODULE,
+//     .open = oled12864_ops_open,
+//     .release = oled12864_ops_release,
+//     .unlocked_ioctl = oled12864_ops_unlocked_ioctl,
+// };
+
+
+static int oled12864_probe(struct platform_device *pdev) {
+  int ret = 0;
+  printk("oled12864_probe\r\n");
+
+  oled12864_dev = (struct oled12864_device *)kzalloc(
+      sizeof(struct oled12864_device), GFP_KERNEL);
+  //   oled12864_dev->client = client;
+
+  //   //申请设备号
+  //   oled12864_dev->major = 0;
+  //   if (oled12864_dev->major) {
+  //     oled12864_dev->dev_no = MKDEV(oled12864_dev->major, 0);
+  //     ret = register_chrdev_region(oled12864_dev->dev_no, 1, DEV_NAME);
+  //   } else {
+  //     ret = alloc_chrdev_region(&oled12864_dev->dev_no, 0, 1, DEV_NAME);
+  //     oled12864_dev->major = MAJOR(oled12864_dev->dev_no);
+  //     oled12864_dev->minor = MINOR(oled12864_dev->dev_no);
+  //   }
+  //   if (ret) {
+  //     pr_err("申请设备号失败\r\n");
+  //     goto vo_chr_failure;
+  //   }
+
+  //   //初始化字符设备
+  //   oled12864_dev->chrdev.owner = THIS_MODULE;
+  //   cdev_init(&oled12864_dev->chrdev, &oled12864_ops);
+  //   ret = cdev_add(&oled12864_dev->chrdev, oled12864_dev->dev_no, 1);
+  //   if (ret) {
+  //     pr_err("初始化字符设备失败\r\n");
+  //     goto vo_chr_add_failure;
+  //   }
+
+  //   //注册类
+  //   oled12864_dev->class = class_create(THIS_MODULE, DEV_NAME);
+  //   if (IS_ERR(oled12864_dev->class)) {
+  //     pr_err("创建类失败\r\n");
+  //     goto vo_class_failure;
+  //   }
+  //   //注册设备
+  //   oled12864_dev->device = device_create(oled12864_dev->class, NULL,
+  //                                         oled12864_dev->dev_no, NULL,
+  //                                         DEV_NAME);
+  //   if (IS_ERR(oled12864_dev->device)) {
+  //     pr_err("创建设备失败\r\n");
+  //     goto vo_device_failure;
+  //   }
+  //   //初试一个定时器工作函数
+  //   INIT_WORK(&dev->wq, oled12864_workqueue_func);
+  //   init_timer(&dev->timer);
+  //   goto out;
+
+  // vo_device_failure:
+  //   class_destroy(oled12864_dev->class);
+  // vo_class_failure:
+  //   cdev_del(&oled12864_dev->chrdev);
+  // vo_chr_add_failure:
+  //   unregister_chrdev_region(oled12864_dev->dev_no, 1);
+  // vo_chr_failure:
+  //   kfree(oled12864_dev);
+
+  // out:
+  return ret;
+}
+
+static int oled12864_remove(struct platform_device *pdev) {
+  int ret = 0;
+  printk("oled12864_remove\r\n");
+
+  //   pr_info("oled12864_remove\r\n");
+  //   //   del_timer(&dev->timer);
+  //   device_destroy(oled12864_dev->class, oled12864_dev->dev_no);
+  //   class_destroy(oled12864_dev->class);
+  //   cdev_del(&oled12864_dev->chrdev);
+  //   unregister_chrdev_region(oled12864_dev->dev_no, 1);
+  //   kfree(oled12864_dev);
+  return ret;
+}
+
+
+static const struct of_device_id oled12864_match_table[] = {
+    {.compatible = "telesky,oled12864"}, {}};
+
+
+static struct platform_device_id oled12864_device_id[] = {{.name = "haha"}, {}};
+
+static struct platform_driver oled12864_driver = {
+    .probe = oled12864_probe,
+    .remove = oled12864_remove,
+    .driver =
+        {
+            .name = "oled12864_driver",
+            .of_match_table = oled12864_match_table,
+        },
+    .id_table = oled12864_device_id,
+};
+
+static int __init oled12864_init(void) {
+  pr_info("oled12864_inits\r\n");
+  if (platform_driver_register(&oled12864_driver)) {
+    pr_info("failed to register ldim_dev driver module\n");
+    return -ENODEV;
+  }
+  return 0;
+}
+static void __exit oled12864_exit(void) {
+  pr_info("oled12864_exit\r\n");
+  platform_driver_unregister(&oled12864_driver);
+}
+MODULE_LICENSE("GPL");
+module_init(oled12864_init);
+module_exit(oled12864_exit);

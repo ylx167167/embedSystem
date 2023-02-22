@@ -1,0 +1,13 @@
+{
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "i2c.h": "c",
+        "cdev.h": "c",
+        "fs.h": "c",
+        "platform_device.h": "c",
+        "device.h": "c",
+        "mod_devicetable.h": "c",
+        "module.h": "c",
+        "type_traits": "c"
+    }
+}

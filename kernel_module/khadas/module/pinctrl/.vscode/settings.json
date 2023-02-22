@@ -1,0 +1,11 @@
+{
+    "C_Cpp.errorSquiggles": "Disabled",
+    "files.associations": {
+        "slab.h": "c",
+        "io.h": "c",
+        "fs.h": "c",
+        "unistd.h": "c",
+        "timer.h": "c",
+        "types.h": "c"
+    }
+}
